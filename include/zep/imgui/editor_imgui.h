@@ -215,6 +215,18 @@ public:
                 SetGlobalMode(ZepMode_Vim::StaticName());
                 handled = true;
             }
+            else if (ImGui::IsKeyPressed(ImGuiKey_Equal))
+            {
+                auto& display = static_cast<ZepDisplay_ImGui&>(GetDisplay());
+                display.HandleFontSizeChange(0.1f);
+                handled = true;
+            }
+            else if (ImGui::IsKeyPressed(ImGuiKey_Minus))
+            {
+                auto& display = static_cast<ZepDisplay_ImGui&>(GetDisplay());
+                display.HandleFontSizeChange(-0.1f);
+                handled = true;
+            }
             else
             {
                 for (int ch = '0'; ch <= '9'; ch++)

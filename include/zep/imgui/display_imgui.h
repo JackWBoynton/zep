@@ -35,43 +35,41 @@ static ImWchar greek_range[] = { 0x300, 0x52F, 0x1f00, 0x1fff, 0, 0 };
 class ZepFont_ImGui : public ZepFont
 {
 public:
-    ZepFont_ImGui(ZepDisplay& display, ImFont* pFont, int pixelHeight)
+    ZepFont_ImGui(ZepDisplay& display)
         : ZepFont(display)
-        , m_pFont(pFont)
+        , m_baseFontSize(ImGui::GetFontSize())
+        , m_scale(1.0f)
     {
-        SetPixelHeight(pixelHeight);
+        m_pixelHeight = static_cast<int>(m_baseFontSize);
     }
 
     virtual void SetPixelHeight(int pixelHeight) override
     {
-        InvalidateCharCache();
+        m_scale = static_cast<float>(pixelHeight) / m_baseFontSize;
         m_pixelHeight = pixelHeight;
     }
 
     virtual NVec2f GetTextSize(const uint8_t* pBegin, const uint8_t* pEnd = nullptr) const override
     {
-        // This is the code from ImGui internals; we can't call GetTextSize, because it doesn't return the correct 'advance' formula, which we
-        // need as we draw one character at a time...
-        const float font_size = m_pFont->LastBaked ? m_pFont->LastBaked->FontSize : 0.0f;
-        ImVec2 text_size = m_pFont->CalcTextSizeA(float(GetPixelHeight()), FLT_MAX, FLT_MAX, (const char*)pBegin, (const char*)pEnd, NULL);
+        ImGui::PushFontSize(m_baseFontSize * m_scale);
+        ImVec2 text_size = ImGui::CalcTextSize((const char*)pBegin, (const char*)pEnd);
         if (text_size.x == 0.0)
         {
-            // Make invalid characters a default fixed_size
             const char chDefault = 'A';
-            text_size = m_pFont->CalcTextSizeA(float(GetPixelHeight()), FLT_MAX, FLT_MAX, &chDefault, (&chDefault + 1), NULL);
+            text_size = ImGui::CalcTextSize(&chDefault, &chDefault + 1);
         }
-
+        ImGui::PopFontSize();
         return toNVec2f(text_size);
     }
 
-    ImFont* GetImFont()
-    {
-        return m_pFont;
-    }
+    void PushSize() const { ImGui::PushFontSize(m_baseFontSize * m_scale); }
+    void PopSize() const { ImGui::PopFontSize(); }
+
+    void AdjustScale(float delta) { m_scale = std::max(0.5f, m_scale + delta); }
 
 private:
-    ImFont* m_pFont;
-    float m_fontScale = 1.0f;
+    float m_baseFontSize;
+    float m_scale;
 };
 
 class ZepDisplay_ImGui : public ZepDisplay
@@ -84,7 +82,9 @@ public:
 
     void DrawChars(ZepFont& font, const NVec2f& pos, const NVec4f& col, const uint8_t* text_begin, const uint8_t* text_end) const override
     {
-        auto imFont = static_cast<ZepFont_ImGui&>(font).GetImFont();
+        auto& zepFont = static_cast<ZepFont_ImGui&>(font);
+        zepFont.PushSize();
+        
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         if (text_end == nullptr)
         {
@@ -93,14 +93,16 @@ public:
         const auto modulatedColor = GetStyleModulatedColor(col);
         if (m_clipRect.Width() == 0)
         {
-            drawList->AddText(imFont, float(font.GetPixelHeight()), toImVec2(pos), modulatedColor, (const char*)text_begin, (const char*)text_end);
+            drawList->AddText(toImVec2(pos), modulatedColor, (const char*)text_begin, (const char*)text_end);
         }
         else
         {
             drawList->PushClipRect(toImVec2(m_clipRect.topLeftPx), toImVec2(m_clipRect.bottomRightPx));
-            drawList->AddText(imFont, float(font.GetPixelHeight()), toImVec2(pos), modulatedColor, (const char*)text_begin, (const char*)text_end);
+            drawList->AddText(toImVec2(pos), modulatedColor, (const char*)text_begin, (const char*)text_end);
             drawList->PopClipRect();
         }
+        
+        zepFont.PopSize();
     }
 
     void DrawLine(const NVec2f& start, const NVec2f& end, const NVec4f& color, float width) const override
@@ -144,11 +146,20 @@ public:
 
     virtual ZepFont& GetFont(ZepTextType type) override
     {
-        if (m_fonts[(int)type] == nullptr)
+        if (!m_font)
         {
-            m_fonts[(int)type] = std::make_shared<ZepFont_ImGui>(*this, ImGui::GetIO().Fonts[0].Fonts[0], int(DefaultTextSize * GetPixelScale().y));
+            m_font = std::make_unique<ZepFont_ImGui>(*this);
+            m_cachedSize = ImGui::GetFontSize();
         }
-        return *m_fonts[(int)type];
+        return *m_font;
+    }
+
+    void HandleFontSizeChange(float delta)
+    {
+        if (m_font)
+        {
+            static_cast<ZepFont_ImGui*>(m_font.get())->AdjustScale(delta);
+        }
     }
 
 private:
@@ -158,6 +169,8 @@ private:
     }
 
     NRectf m_clipRect;
+    mutable std::unique_ptr<ZepFont_ImGui> m_font;
+    mutable float m_cachedSize = 0.0f;
 }; // namespace Zep
 
 } // namespace Zep
