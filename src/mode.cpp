@@ -1,5 +1,6 @@
 #include "zep/mode.h"
 #include "zep/buffer.h"
+#include "zep/commands.h"
 #include "zep/editor.h"
 #include "zep/filesystem.h"
 #include "zep/mcommon/logger.h"
@@ -368,7 +369,7 @@ void ZepMode::AddKeyPress(uint32_t key, uint32_t modifierKeys)
     key &= 0xFF;
 
     // Keys in this range converted to UTF8.  I need to figure out how to generically receive UTF8 here, but this
-    // temporary fix enables £-sign and other specials to display and work correctly
+    // temporary fix enables ï¿½-sign and other specials to display and work correctly
     if (key >= 127 && key <= 255)
     {
 
@@ -376,6 +377,45 @@ void ZepMode::AddKeyPress(uint32_t key, uint32_t modifierKeys)
     }
 
     m_lastKey = key;
+
+    // Handle completion system first
+    if (m_completionActive && m_completionWindow && m_completionWindow->IsVisible())
+    {
+        // Let completion window handle navigation keys
+        if (m_completionWindow->HandleKeyPress(key, modifierKeys))
+        {
+            // Key was handled by completion system
+            if (key == ExtKeys::TAB || key == ExtKeys::RETURN)
+            {
+                // Accept completion
+                HandleCompletionAccept();
+            }
+            timer_restart(m_lastKeyPressTimer);
+            return;
+        }
+
+        // Key wasn't handled by completion, check if we should update the prefix
+        if (key >= 32 && key <= 126) // Printable ASCII characters
+        {
+            UpdateCompletionPrefix();
+        }
+        else if (key == ExtKeys::BACKSPACE)
+        {
+            UpdateCompletionPrefix();
+        }
+        else
+        {
+            // Non-printable key that isn't handled by completion, hide it
+            HideCompletion();
+        }
+    }
+
+    // Check for completion trigger characters
+    if (!m_completionActive && key >= 32 && key <= 126) // Printable ASCII
+    {
+        char triggerChar = static_cast<char>(key);
+        TriggerCompletion(triggerChar);
+    }
 
     // Get the new command by parsing out the keys
     // We convert CTRL + f to a string: "<C-f>"
@@ -2661,6 +2701,166 @@ void ZepMode::Begin(ZepWindow* pWindow)
     {
         GetEditor().GetGlobalMode()->Begin(pWindow);
     }
+}
+
+// Completion system implementation
+void ZepMode::RegisterCompletionProvider(std::unique_ptr<ICompletionProvider> provider)
+{
+    m_completionProviders.push_back(std::move(provider));
+}
+
+void ZepMode::ClearCompletionProviders()
+{
+    m_completionProviders.clear();
+}
+
+bool ZepMode::IsCompletionVisible() const
+{
+    return m_completionActive && m_completionWindow && m_completionWindow->IsVisible();
+}
+
+void ZepMode::HideCompletion()
+{
+    if (m_completionWindow)
+    {
+        m_completionWindow->Hide();
+    }
+    m_completionActive = false;
+}
+
+void ZepMode::TriggerCompletion(char triggerChar)
+{
+    if (!m_pCurrentWindow)
+        return;
+
+    auto& buffer = m_pCurrentWindow->GetBuffer();
+    auto cursor = m_pCurrentWindow->GetBufferCursor();
+
+    // Check if any provider should trigger for this character
+    ICompletionProvider* activeProvider = nullptr;
+    for (auto& provider : m_completionProviders)
+    {
+        if (provider->ShouldTrigger(triggerChar, cursor, buffer))
+        {
+            activeProvider = provider.get();
+            break;
+        }
+    }
+
+    if (!activeProvider)
+        return;
+
+    // Initialize completion window if needed
+    if (!m_completionWindow)
+    {
+        m_completionWindow = std::make_unique<CompletionWindow>(*m_pCurrentWindow);
+    }
+
+    // Mark the trigger position (we'll update this after the character is inserted)
+    m_completionTriggerPos = cursor;
+    m_completionActive = true;
+
+    // We'll show completions after the character is processed and inserted
+}
+
+void ZepMode::UpdateCompletionPrefix()
+{
+    if (!m_completionActive || !m_pCurrentWindow)
+        return;
+
+    auto& buffer = m_pCurrentWindow->GetBuffer();
+    auto cursor = m_pCurrentWindow->GetBufferCursor();
+
+    // Get the current prefix from trigger position to cursor
+    std::string prefix = GetCompletionPrefix();
+
+    // Get completions from all providers
+    std::vector<CompletionItem> allCompletions;
+    for (auto& provider : m_completionProviders)
+    {
+        auto completions = provider->GetCompletions(prefix, cursor, buffer);
+        allCompletions.insert(allCompletions.end(), completions.begin(), completions.end());
+    }
+
+    if (allCompletions.empty())
+    {
+        HideCompletion();
+        return;
+    }
+
+    // Show or update the completion window
+    if (m_completionWindow->IsVisible())
+    {
+        m_completionWindow->UpdateCompletions(allCompletions);
+    }
+    else
+    {
+        // Calculate display position (below the cursor)
+        auto& display = GetEditor().GetDisplay();
+        auto& font = display.GetFont(ZepTextType::Text);
+        auto charSize = font.GetDefaultCharSize();
+        NVec2f displayPos(0.0f, charSize.y); // Simple position for now
+
+        m_completionWindow->Show(displayPos, allCompletions, m_completionTriggerPos);
+    }
+}
+
+void ZepMode::HandleCompletionAccept()
+{
+    if (!m_completionActive || !m_completionWindow || !m_pCurrentWindow)
+        return;
+
+    auto selectedItem = m_completionWindow->GetSelectedItem();
+    if (!selectedItem)
+        return;
+
+    auto& buffer = m_pCurrentWindow->GetBuffer();
+
+    // Calculate the range to replace (from trigger position to current cursor)
+    auto cursor = m_pCurrentWindow->GetBufferCursor();
+    auto startPos = m_completionWindow->GetTriggerPosition();
+
+    // Replace the prefix with the selected completion
+    if (cursor >= startPos)
+    {
+        ChangeRecord changeRecord;
+
+        // Delete the current prefix
+        if (cursor > startPos)
+        {
+            buffer.Delete(startPos, cursor, changeRecord);
+        }
+
+        // Insert the completion
+        buffer.Insert(startPos, selectedItem->text, changeRecord);
+
+        // Move cursor to end of inserted text
+        auto newCursor = startPos + selectedItem->text.length();
+        m_pCurrentWindow->SetBufferCursor(newCursor);
+    }
+
+    HideCompletion();
+}
+
+std::string ZepMode::GetCompletionPrefix() const
+{
+    if (!m_completionActive || !m_pCurrentWindow)
+        return "";
+
+    auto& buffer = m_pCurrentWindow->GetBuffer();
+    auto cursor = m_pCurrentWindow->GetBufferCursor();
+    auto triggerPos = m_completionWindow ? m_completionWindow->GetTriggerPosition() : m_completionTriggerPos;
+
+    if (cursor < triggerPos)
+        return "";
+
+    // Extract text from trigger position to cursor
+    auto& workingBuffer = buffer.GetWorkingBuffer();
+    if (triggerPos.Index() >= workingBuffer.size() || cursor.Index() > workingBuffer.size())
+        return "";
+
+    return std::string(workingBuffer.begin() + triggerPos.Index(),
+                      workingBuffer.begin() + cursor.Index());
 }
 
 } // namespace Zep

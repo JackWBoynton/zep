@@ -5,6 +5,8 @@
 #ifdef ZEP_SINGLE_HEADER_BUILD
 #include "../src/buffer.cpp"
 #include "../src/commands.cpp"
+#include "../src/completion.cpp"
+#include "../src/completion_window.cpp"
 #include "../src/display.cpp"
 #include "../src/editor.cpp"
 #include "../src/filesystem.cpp"
@@ -37,6 +39,8 @@
 #include "zep/editor.h"
 #include "zep/syntax.h"
 #include "zep/buffer.h"
+#include "zep/completion.h"
+#include "zep/completion_window.h"
 #include "zep/tab_window.h"
 #include "zep/mode_vim.h"
 #include "zep/mode_standard.h"

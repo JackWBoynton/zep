@@ -6,6 +6,8 @@ ${ZEP_ROOT}/include/zep/buffer.h
 ${ZEP_ROOT}/include/zep/range_markers.h
 ${ZEP_ROOT}/include/zep/glyph_iterator.h
 ${ZEP_ROOT}/include/zep/commands.h
+${ZEP_ROOT}/include/zep/completion.h
+${ZEP_ROOT}/include/zep/completion_window.h
 ${ZEP_ROOT}/include/zep/display.h
 ${ZEP_ROOT}/include/zep/editor.h
 ${ZEP_ROOT}/include/zep/filesystem.h
@@ -40,6 +42,8 @@ ${ZEP_ROOT}/src/buffer.cpp
 ${ZEP_ROOT}/src/range_markers.cpp
 ${ZEP_ROOT}/src/glyph_iterator.cpp
 ${ZEP_ROOT}/src/commands.cpp
+${ZEP_ROOT}/src/completion.cpp
+${ZEP_ROOT}/src/completion_window.cpp
 ${ZEP_ROOT}/src/display.cpp
 ${ZEP_ROOT}/src/editor.cpp
 ${ZEP_ROOT}/src/filesystem.cpp

@@ -4,6 +4,8 @@
 
 #include "zep/buffer.h"
 #include "zep/commands.h"
+#include "zep/completion.h"
+#include "zep/completion_window.h"
 #include "zep/display.h"
 #include "zep/keymap.h"
 #include "zep/window.h"
@@ -196,6 +198,12 @@ public:
         return std::vector<Airline>{};
     }
 
+    // Completion system
+    void RegisterCompletionProvider(std::unique_ptr<ICompletionProvider> provider);
+    void ClearCompletionProviders();
+    bool IsCompletionVisible() const;
+    void HideCompletion();
+
 protected:
     // Do the actual input handling
     virtual void HandleMappedInput(const std::string& input);
@@ -226,6 +234,12 @@ protected:
 
     virtual void ClearSelection();
 
+    // Completion system helpers
+    virtual void TriggerCompletion(char triggerChar);
+    virtual void UpdateCompletionPrefix();
+    virtual void HandleCompletionAccept();
+    virtual std::string GetCompletionPrefix() const;
+
 protected:
     EditorMode m_currentMode = EditorMode::Normal;
     bool m_lineWise = false;
@@ -254,6 +268,12 @@ protected:
     ZepWindow* m_pCurrentWindow = nullptr;
 
     timer m_lastKeyPressTimer;
+
+    // Completion system
+    std::vector<std::unique_ptr<ICompletionProvider>> m_completionProviders;
+    std::unique_ptr<CompletionWindow> m_completionWindow;
+    GlyphIterator m_completionTriggerPos;
+    bool m_completionActive = false;
 };
 
 // Give a client the option to modify a command before it is sent
