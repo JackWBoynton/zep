@@ -123,17 +123,18 @@ public:
             }
         }
 
-        if (io.KeyCtrl)
+        // Use ImGuiMod_Ctrl which maps to Cmd on macOS, Ctrl on Windows/Linux
+        if (io.KeyMods & ImGuiMod_Ctrl)
         {
             mod |= ModifierKey::Ctrl;
         }
 
-        if (io.KeyAlt)
+        if (io.KeyMods & ImGuiMod_Alt)
         {
             mod |= ModifierKey::Alt;
         }
 
-        if (io.KeyShift)
+        if (io.KeyMods & ImGuiMod_Shift)
         {
             mod |= ModifierKey::Shift;
         }
@@ -154,7 +155,7 @@ public:
             }
         }
 
-        if (io.KeyCtrl)
+        if (io.KeyMods & ImGuiMod_Ctrl)
         {
             // Check Shiftable USB Keys
             for (auto& usbKey : MapShiftableUSBKeys)
@@ -166,7 +167,7 @@ public:
                 }
             }
             // SDL Remaps to its own scancodes; and since we can't look them up in the standard IMGui list
-            // without modifying the ImGui base code, we have special handling here for CTRL.
+            // without modifying the ImGui base code, we have special handling here for CTRL/CMD.
             // For the Win32 case, we use VK_A (ASCII) is handled below
 #if defined(_SDL_H) || defined(ZEP_USE_SDL)
             if (ImGui::IsKeyPressed(ImGuiKey_1))
