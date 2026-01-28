@@ -126,7 +126,9 @@ void RangeMarker::HandleBufferInsert(ZepBuffer& buffer, const GlyphIterator& itr
         }
         else
         {
-            buffer.ClearRangeMarker(shared_from_this());
+            // Keep marker alive until after we set m_enabled
+            auto spMarker = shared_from_this();
+            buffer.ClearRangeMarker(spMarker);
             m_enabled = false;
         }
     }
@@ -156,7 +158,9 @@ void RangeMarker::HandleBufferDelete(ZepBuffer& buffer, const GlyphIterator& itr
         }
         else
         {
-            buffer.ClearRangeMarker(shared_from_this());
+            // Keep marker alive until after we set m_enabled
+            auto spMarker = shared_from_this();
+            buffer.ClearRangeMarker(spMarker);
             m_enabled = false;
         }
     }
