@@ -169,48 +169,63 @@ public:
             // without modifying the ImGui base code, we have special handling here for CTRL.
             // For the Win32 case, we use VK_A (ASCII) is handled below
 #if defined(_SDL_H) || defined(ZEP_USE_SDL)
-            if (ImGui::IsKeyPressed(ImGuiKey(KEY_1)))
+            if (ImGui::IsKeyPressed(ImGuiKey_1))
             {
                 SetGlobalMode(ZepMode_Standard::StaticName());
                 handled = true;
             }
-            else if (ImGui::IsKeyPressed(ImGuiKey(KEY_2)))
+            else if (ImGui::IsKeyPressed(ImGuiKey_2))
             {
                 SetGlobalMode(ZepMode_Vim::StaticName());
                 handled = true;
             }
             else
             {
-                for (int ch = KEY_1; ch <= KEY_0; ch++)
+                // Use proper ImGuiKey enums for digits
+                static const ImGuiKey digitKeys[] = {
+                    ImGuiKey_0, ImGuiKey_1, ImGuiKey_2, ImGuiKey_3, ImGuiKey_4,
+                    ImGuiKey_5, ImGuiKey_6, ImGuiKey_7, ImGuiKey_8, ImGuiKey_9
+                };
+                for (int i = 0; i <= 9; i++)
                 {
-                    if (ImGui::IsKeyPressed(ImGuiKey(ch)))
+                    if (ImGui::IsKeyPressed(digitKeys[i]))
                     {
-                        pBuffer->GetMode()->AddKeyPress(ch == KEY_0 ? '0' : ch - KEY_1 + '1', mod);
-                        handled = true;
-                    }
-                }
-                for (int ch = KEY_A; ch <= KEY_Z; ch++)
-                {
-                    if (ImGui::IsKeyPressed(ImGuiKey(ch)))
-                    {
-                        pBuffer->GetMode()->AddKeyPress((ch - KEY_A) + 'a', mod);
+                        pBuffer->GetMode()->AddKeyPress('0' + i, mod);
                         handled = true;
                     }
                 }
 
-                if (ImGui::IsKeyPressed(ImGuiKey(KEY_SPACE)))
+                // Use proper ImGuiKey enums for letters
+                static const ImGuiKey letterKeys[] = {
+                    ImGuiKey_A, ImGuiKey_B, ImGuiKey_C, ImGuiKey_D, ImGuiKey_E,
+                    ImGuiKey_F, ImGuiKey_G, ImGuiKey_H, ImGuiKey_I, ImGuiKey_J,
+                    ImGuiKey_K, ImGuiKey_L, ImGuiKey_M, ImGuiKey_N, ImGuiKey_O,
+                    ImGuiKey_P, ImGuiKey_Q, ImGuiKey_R, ImGuiKey_S, ImGuiKey_T,
+                    ImGuiKey_U, ImGuiKey_V, ImGuiKey_W, ImGuiKey_X, ImGuiKey_Y,
+                    ImGuiKey_Z
+                };
+                for (int i = 0; i < 26; i++)
+                {
+                    if (ImGui::IsKeyPressed(letterKeys[i]))
+                    {
+                        pBuffer->GetMode()->AddKeyPress('a' + i, mod);
+                        handled = true;
+                    }
+                }
+
+                if (ImGui::IsKeyPressed(ImGuiKey_Space))
                 {
                     pBuffer->GetMode()->AddKeyPress(' ', mod);
                     handled = true;
                 }
             }
 #else
-            if (ImGui::IsKeyPressed(ImGuiKey('1')))
+            if (ImGui::IsKeyPressed(ImGuiKey_1))
             {
                 SetGlobalMode(ZepMode_Standard::StaticName());
                 handled = true;
             }
-            else if (ImGui::IsKeyPressed(ImGuiKey('2')))
+            else if (ImGui::IsKeyPressed(ImGuiKey_2))
             {
                 SetGlobalMode(ZepMode_Vim::StaticName());
                 handled = true;
@@ -229,24 +244,39 @@ public:
             }
             else
             {
-                for (int ch = '0'; ch <= '9'; ch++)
+                // Use proper ImGuiKey enums for digits
+                static const ImGuiKey digitKeys[] = {
+                    ImGuiKey_0, ImGuiKey_1, ImGuiKey_2, ImGuiKey_3, ImGuiKey_4,
+                    ImGuiKey_5, ImGuiKey_6, ImGuiKey_7, ImGuiKey_8, ImGuiKey_9
+                };
+                for (int i = 0; i <= 9; i++)
                 {
-                    if (ImGui::IsKeyPressed(ImGuiKey(ch)))
+                    if (ImGui::IsKeyPressed(digitKeys[i]))
                     {
-                        pBuffer->GetMode()->AddKeyPress(ch, mod);
-                        handled = true;
-                    }
-                }
-                for (int ch = 'A'; ch <= 'Z'; ch++)
-                {
-                    if (ImGui::IsKeyPressed(ImGuiKey(ch)))
-                    {
-                        pBuffer->GetMode()->AddKeyPress(ch - 'A' + 'a', mod);
+                        pBuffer->GetMode()->AddKeyPress('0' + i, mod);
                         handled = true;
                     }
                 }
 
-                if (ImGui::IsKeyPressed(ImGuiKey(KEY_SPACE)))
+                // Use proper ImGuiKey enums for letters
+                static const ImGuiKey letterKeys[] = {
+                    ImGuiKey_A, ImGuiKey_B, ImGuiKey_C, ImGuiKey_D, ImGuiKey_E,
+                    ImGuiKey_F, ImGuiKey_G, ImGuiKey_H, ImGuiKey_I, ImGuiKey_J,
+                    ImGuiKey_K, ImGuiKey_L, ImGuiKey_M, ImGuiKey_N, ImGuiKey_O,
+                    ImGuiKey_P, ImGuiKey_Q, ImGuiKey_R, ImGuiKey_S, ImGuiKey_T,
+                    ImGuiKey_U, ImGuiKey_V, ImGuiKey_W, ImGuiKey_X, ImGuiKey_Y,
+                    ImGuiKey_Z
+                };
+                for (int i = 0; i < 26; i++)
+                {
+                    if (ImGui::IsKeyPressed(letterKeys[i]))
+                    {
+                        pBuffer->GetMode()->AddKeyPress('a' + i, mod);
+                        handled = true;
+                    }
+                }
+
+                if (ImGui::IsKeyPressed(ImGuiKey_Space))
                 {
                     pBuffer->GetMode()->AddKeyPress(' ', mod);
                     handled = true;
