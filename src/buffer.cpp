@@ -520,7 +520,7 @@ GlyphIterator ZepBuffer::FindFirstCharOf(GlyphIterator start, const std::string&
 
     for (;;)
     {
-        for (int i = 0; i < chars.length(); i++)
+        for (size_t i = 0; i < chars.length(); i++)
         {
             if (itr.Char() == chars[i])
             {

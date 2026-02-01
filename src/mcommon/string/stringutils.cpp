@@ -47,7 +47,9 @@ void string_replace_in_place(std::string& subject, const std::string& search, co
     }
 }
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4996)
+#endif
 // https://stackoverflow.com/questions/4804298/how-to-convert-wstring-into-string
 std::string string_from_wstring(const std::wstring& str)
 {
@@ -58,7 +60,9 @@ std::string string_from_wstring(const std::wstring& str)
     std::string converted_str = converter.to_bytes(str);
     return converted_str;
 }
+#ifdef _MSC_VER
 #pragma warning(default : 4996)
+#endif
 
 // CM: I can't remember where this came from; please let me know if you do!
 // I know it is open source, but not sure who wrote it.

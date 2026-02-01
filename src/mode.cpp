@@ -2856,7 +2856,7 @@ std::string ZepMode::GetCompletionPrefix() const
 
     // Extract text from trigger position to cursor
     auto& workingBuffer = buffer.GetWorkingBuffer();
-    if (triggerPos.Index() >= workingBuffer.size() || cursor.Index() > workingBuffer.size())
+    if (static_cast<size_t>(triggerPos.Index()) >= workingBuffer.size() || static_cast<size_t>(cursor.Index()) > workingBuffer.size())
         return "";
 
     return std::string(workingBuffer.begin() + triggerPos.Index(),

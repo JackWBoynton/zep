@@ -120,6 +120,7 @@ protected:
 class ZepTree
 {
 public:
+    virtual ~ZepTree() = default;
     virtual ZepTreeNode* GetRoot() const
     {
         return m_spRoot.get();
@@ -167,7 +168,7 @@ private:
 private:
     std::shared_ptr<ZepTree> m_spTree;
     GlyphIterator m_startLocation = GlyphIterator{ 0 };
-    ZepWindow& m_launchWindow;
+    [[maybe_unused]] ZepWindow& m_launchWindow;
     ZepWindow& m_window;
 };
 

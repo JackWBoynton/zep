@@ -1227,12 +1227,8 @@ void ZepEditor::Display()
     }
 
     // Figure out the virtual vs real page size of the tabs
-    float virtualSize = 0.0f;
     float tabRegionSize = m_tabRegion->rect.Width();
-    if (!m_tabRegion->children.empty())
-    {
-        virtualSize = m_tabRegion->children.back()->rect.Right();
-    }
+    (void)tabRegionSize;
 
     const auto selectHeight = int(DPI_Y(tabSelectLine));
 

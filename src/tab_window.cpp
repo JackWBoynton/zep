@@ -13,7 +13,6 @@ namespace Zep
 
 ZepTabWindow::ZepTabWindow(ZepEditor& editor)
     : ZepComponent(editor)
-    , m_editor(editor)
 {
     m_spRootRegion = std::make_shared<Region>();
     m_spRootRegion->flags = RegionFlags::Expanding;

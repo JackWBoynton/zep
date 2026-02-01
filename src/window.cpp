@@ -647,7 +647,6 @@ void ZepWindow::UpdateLineSpans()
 
         // TODO: Optimize
         line->lineCodePoints.clear();
-        uint32_t points = 0;
         while (ch < line->lineByteRange.second)
         {
             LineCharInfo info;
@@ -1622,7 +1621,7 @@ void ZepWindow::PlaceToolTip(const NVec2f& pos, ToolTipPos location, uint32_t li
 
 void ZepWindow::DisplayMarkerHints()
 {
-    if ((m_visibleLineIndices.x >= m_windowLines.size()) || (m_visibleLineIndices.y >= m_windowLines.size()))
+    if ((static_cast<size_t>(m_visibleLineIndices.x) >= m_windowLines.size()) || (static_cast<size_t>(m_visibleLineIndices.y) >= m_windowLines.size()))
     {
         return;
     }

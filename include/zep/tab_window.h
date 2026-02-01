@@ -52,7 +52,6 @@ public:
     void Display();
 
 private:
-    ZepEditor& m_editor; // Editor that owns this window
     NRectf m_lastRegionRect;
 
     tWindows m_windows;
