@@ -658,7 +658,6 @@ void ZepWindow::UpdateLineSpans()
             info.size = line->pFont->GetCharSize(&textBuffer[ch]);
             line->lineCodePoints.push_back(info);
             ch += utf8_codepoint_length(textBuffer[ch]);
-            points++;
         }
     }
 
