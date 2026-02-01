@@ -156,6 +156,7 @@ public:
 
 struct IZepComponent
 {
+    virtual ~IZepComponent() = default;
     virtual void Notify(std::shared_ptr<ZepMessage> message)
     {
         ZEP_UNUSED(message);
@@ -291,7 +292,7 @@ class ZepEditor
 public:
     // Root path is the path to search for a config file
     ZepEditor(ZepDisplay* pDisplay, const fs::path& root, uint32_t flags = 0, IZepFileSystem* pFileSystem = nullptr);
-    ~ZepEditor();
+    virtual ~ZepEditor();
 
     void LoadConfig(const fs::path& config_path);
     void LoadConfig(std::shared_ptr<cpptoml::table> spConfig);

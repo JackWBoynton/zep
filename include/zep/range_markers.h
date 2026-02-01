@@ -64,6 +64,7 @@ enum class ToolTipPos
 struct RangeMarker : std::enable_shared_from_this<RangeMarker>
 {
     RangeMarker(ZepBuffer& buffer);
+    virtual ~RangeMarker() = default;
 
     bool ContainsLocation(GlyphIterator loc) const;
     bool IntersectsRange(const ByteRange& i) const;

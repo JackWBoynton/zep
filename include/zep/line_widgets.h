@@ -7,6 +7,7 @@ namespace Zep
 
 struct IWidget
 {
+    virtual ~IWidget() = default;
     virtual NVec2f GetSize() const = 0; // Required size of the widget
     virtual void MouseDown(const NVec2f& pos, ZepMouseButton button) = 0;
     virtual void MouseUp(const NVec2f& pos, ZepMouseButton button) = 0;

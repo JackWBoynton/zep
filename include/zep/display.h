@@ -40,6 +40,7 @@ public:
         : m_display(display)
     {
     }
+    virtual ~ZepFont() = default;
 
     // Implemented in API specific ways
     virtual void SetPixelHeight(int height) = 0;

@@ -24,6 +24,7 @@ public:
     using TChildren = std::vector<TNode>;
 
     ZepTreeNode(const std::string& strName, uint32_t flags = ZepTreeNodeFlags::None);
+    virtual ~ZepTreeNode() = default;
 
     virtual const std::string& GetName() const
     {
