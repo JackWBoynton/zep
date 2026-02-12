@@ -51,21 +51,30 @@ public:
 
     virtual NVec2f GetTextSize(const uint8_t* pBegin, const uint8_t* pEnd = nullptr) const override
     {
-        ImGui::PushFontSize(m_baseFontSize * m_scale);
+        ImGui::PushFont(NULL, m_baseFontSize * m_scale);
         ImVec2 text_size = ImGui::CalcTextSize((const char*)pBegin, (const char*)pEnd);
         if (text_size.x == 0.0)
         {
             const char chDefault = 'A';
             text_size = ImGui::CalcTextSize(&chDefault, &chDefault + 1);
         }
-        ImGui::PopFontSize();
+        ImGui::PopFont();
         return toNVec2f(text_size);
     }
 
-    void PushSize() const { ImGui::PushFontSize(m_baseFontSize * m_scale); }
-    void PopSize() const { ImGui::PopFontSize(); }
+    void PushSize() const
+    {
+        ImGui::PushFont(NULL, m_baseFontSize * m_scale);
+    }
+    void PopSize() const
+    {
+        ImGui::PopFont();
+    }
 
-    void AdjustScale(float delta) { m_scale = std::max(0.5f, m_scale + delta); }
+    void AdjustScale(float delta)
+    {
+        m_scale = std::max(0.5f, m_scale + delta);
+    }
 
 private:
     float m_baseFontSize;
@@ -84,7 +93,7 @@ public:
     {
         auto& zepFont = static_cast<ZepFont_ImGui&>(font);
         zepFont.PushSize();
-        
+
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         if (text_end == nullptr)
         {
@@ -101,7 +110,7 @@ public:
             drawList->AddText(toImVec2(pos), modulatedColor, (const char*)text_begin, (const char*)text_end);
             drawList->PopClipRect();
         }
-        
+
         zepFont.PopSize();
     }
 
