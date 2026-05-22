@@ -69,17 +69,19 @@ endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     message(STATUS "TARGET_MAC")
-    
+
     find_package(Threads REQUIRED)
-    find_package(BZip2 REQUIRED)
-    find_package(ZLIB REQUIRED)
 
     LIST(APPEND PLATFORM_LINKLIBS
-        ${BZIP2_LIBRARY}
-        ${ZLIB_LIBRARY}
         dl
         "-framework CoreFoundation"
         )
+
+    if(BUILD_DEMOS OR BUILD_TESTS)
+        find_package(BZip2 REQUIRED)
+        find_package(ZLIB REQUIRED)
+        LIST(APPEND PLATFORM_LINKLIBS ${BZIP2_LIBRARY} ${ZLIB_LIBRARY})
+    endif()
 
     set(TARGET_MAC 1)
 endif()
