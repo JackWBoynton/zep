@@ -1,7 +1,9 @@
 #pragma once
 
-#include "zep/mcommon/utf8/core.h"
 #include "gap_buffer.h"
+#include "zep/mcommon/utf8/core.h"
+
+#include <cstdint>
 
 namespace Zep
 {
@@ -12,9 +14,10 @@ using ByteIndex = long;
 struct ByteRange
 {
     ByteRange(ByteIndex a = 0, ByteIndex b = 0)
-        : first(a),
-        second(b)
-    { }
+        : first(a)
+        , second(b)
+    {
+    }
     ByteIndex first;
     ByteIndex second;
     bool ContainsLocation(ByteIndex loc) const
