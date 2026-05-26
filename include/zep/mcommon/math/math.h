@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cmath>
-#include <ostream>
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <ostream>
 
 // 2D and 4D vectors, used for area and color calculations.
 // Some helpers for color conversion too.
@@ -446,7 +447,7 @@ struct NRect
     {
         bottomRightPx = topLeftPx + size;
     }
-    
+
     void SetHeight(const T height)
     {
         bottomRightPx.y = topLeftPx.y + height;
