@@ -13,12 +13,9 @@
 #include <thread>
 
 #ifdef WIN32
-// A reference to the debug API on windows, to help the logger output in VC.  This is better
-// than out to the console sometimes, and as long as you are building on Windows, you are referencing the necessary
-// kernel32.dll....
-extern "C" {
-__declspec(dllimport) void __stdcall OutputDebugStringA(_In_opt_ const char* pszChar);
-}
+// Pull the real, SAL-annotated declaration from the Windows SDK (works on both MSVC and
+// MinGW) instead of hand-rolling an extern "C" declspec that only MSVC's headers satisfy.
+#include <windows.h>
 #endif
 
 #undef ERROR
